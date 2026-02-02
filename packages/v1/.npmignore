@@ -1,0 +1,15 @@
+# Ignorar arquivos de desenvolvimento
+tsconfig.json
+*.ts
+!*.d.ts
+
+# Ignorar node_modules
+node_modules/
+
+# Ignorar arquivos do git
+.git/
+.gitignore
+
+# Ignorar documentação de build
+*.log
+npm-debug.log*
