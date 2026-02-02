@@ -1350,11 +1350,20 @@ export class Digitalsac implements INodeType {
 			}
 
 			try {
-				responseData = await this.helpers.request(options);
+				// httpRequest usa 'url' (request está deprecated)
+				const requestUrl = (options.uri as string) || `${baseUrl}${url}`;
+				const requestOptions = {
+					url: requestUrl,
+					method: options.method || method,
+					headers: options.headers || headers,
+					...(options.body !== undefined && { body: options.body }),
+				};
+				responseData = await this.helpers.httpRequest(requestOptions);
 				returnData.push({ json: responseData });
 			} catch (error: any) {
+				const body = error.response?.data ?? error.response?.body;
 				if (error.response) {
-					returnData.push({ json: { error: error.response.body || error.message } });
+					returnData.push({ json: { error: body || error.message } });
 				} else {
 					returnData.push({ json: { error: error.message } });
 				}

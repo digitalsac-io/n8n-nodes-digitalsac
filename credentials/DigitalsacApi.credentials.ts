@@ -1,4 +1,6 @@
 import {
+	IAuthenticateGeneric,
+	ICredentialTestRequest,
 	ICredentialType,
 	NodePropertyTypes,
 } from 'n8n-workflow';
@@ -20,6 +22,25 @@ export class DigitalsacApi implements ICredentialType {
 			name: 'token',
 			type: 'string' as NodePropertyTypes,
 			default: '',
+			typeOptions: { password: true },
 		},
 	];
-} 
+
+	authenticate: IAuthenticateGeneric = {
+		type: 'generic',
+		properties: {
+			headers: {
+				Authorization: '=Bearer {{$credentials.token}}',
+				Accept: 'application/json',
+			},
+		},
+	};
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: '={{$credentials.baseUrl}}',
+			url: '/version',
+			method: 'GET',
+		},
+	};
+}
