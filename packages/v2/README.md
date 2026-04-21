@@ -4,12 +4,22 @@ Este pacote adiciona um nó personalizado ao n8n para interagir com a API do Dig
 
 ## ✅ Versão para n8n v2.x
 
-**Esta é a versão 1.0.2, compatível com n8n v2.x**
+**Esta é a versão 1.1.4, compatível com n8n v2.x**
 
-Se você usa **n8n v1.x**, instale a versão correta:
-```bash
-npm install n8n-nodes-digitalsac
-```
+> A linha para **n8n v1.x** foi **descontinuada** e mantida apenas como legado.
+
+## 🆕 O que tem de novo nesta versão (1.1.4)
+
+- ✅ Nova operação **Enviar SMS Short**
+- ✅ Endpoint suportado: `POST /typebot/enviar_sms`
+- ✅ Campos dedicados no node: **Número de Telefone** e **Mensagem SMS**
+- ✅ Nova operação **Enviar Carousel** no node Digitalsac
+- ✅ Endpoint suportado: `POST /v1/api/external/{uuid}/send-carousel`
+- ✅ Documentação de uso atualizada com exemplo de cards (JSON)
+- ✅ Nova operação **Próximo Atendente da Fila** (`next-assignee`)
+- ✅ Nova operação **Transferir para Próximo Atendente** (`transfer-next-assignee`)
+- ✅ Operação **Vincular Kanban** atualizada para uso documentado do endpoint `POST /typebot/vincular_kanban_v2`
+- ✅ Exemplo completo com campos opcionais do Kanban V2 no README
 
 ---
 
@@ -22,10 +32,13 @@ npm install n8n-nodes-digitalsac
 - Listar Atendentes
 - Transferir para Fila
 - Transferir para Atendente
+- Próximo Atendente da Fila (next-assignee)
+- Transferir para Próximo Atendente (transfer-next-assignee)
 - Fechar Ticket
 - Enviar Mensagem (texto e arquivos)
 - **Enviar Botões Interativos**
 - **Enviar Listas**
+- **Enviar Carousel**
 - **Enviar Mídia com Caption**
 - **Enviar Arquivo Base64**
 - Listar Tags
@@ -45,6 +58,8 @@ npm install n8n-nodes-digitalsac
 - **Templates WABA:**
   - Listar Templates WABA
   - Enviar Template WABA
+- **SMS:**
+  - Enviar SMS Short
 
 ## Instalação
 
@@ -114,6 +129,17 @@ Configure as credenciais Digitalsac com a URL base e seu Bearer Token:
    - **API Base URL**: URL da sua instalação do Digitalsac (ex: https://seudominio.digitalsac.com.br)
    - **Bearer Token**: Seu token de autenticação
 
+## Licença para endpoints de distribuição
+
+As operações **Próximo Atendente da Fila** e **Transferir para Próximo Atendente** usam os endpoints:
+- `POST /v1/api/external/:apiId/next-assignee`
+- `POST /v1/api/external/:apiId/transfer-next-assignee`
+
+Esses endpoints funcionam **apenas em planos Izing Cloud 4 core ou superiores**:
+- `CLOUD4CORE`
+- `CLOUD6CORE`
+- `CLOUD8CORE`
+
 ## Como Usar
 
 ### Validar WhatsApp
@@ -173,6 +199,86 @@ Onde:
 ```
 Onde:
 - `ticketId`: ID do ticket a ser fechado
+
+### Próximo Atendente da Fila (next-assignee)
+1. Selecione a operação **Próximo Atendente da Fila**
+2. No campo **Parâmetro**, informe o UUID da conexão (`apiId`)
+3. No campo **Dados (JSON)**, use:
+```json
+{
+  "queueId": 3,
+  "ticketId": 1201,
+  "method": "S",
+  "allowOffline": false
+}
+```
+
+**Endpoint chamado pelo node:** `POST /v1/api/external/:apiId/next-assignee`
+
+**Métodos aceitos em `method`:**
+- `R` (Random)
+- `B` (Balanced)
+- `S` (Sequential)
+- `L` (Sticky com fallback para Balanced)
+
+**Resposta de sucesso:**
+```json
+{
+  "queueId": 3,
+  "method": "S",
+  "nextUser": {
+    "id": 17,
+    "name": "Maria"
+  }
+}
+```
+
+**Resposta sem usuário elegível:**
+```json
+{
+  "queueId": 3,
+  "method": "S",
+  "nextUser": null
+}
+```
+
+### Transferir para Próximo Atendente (transfer-next-assignee)
+1. Selecione a operação **Transferir para Próximo Atendente**
+2. No campo **Parâmetro**, informe o UUID da conexão (`apiId`)
+3. No campo **Dados (JSON)**, use:
+```json
+{
+  "queueId": 3,
+  "ticketId": 1201,
+  "method": "S",
+  "allowOffline": false
+}
+```
+
+**Endpoint chamado pelo node:** `POST /v1/api/external/:apiId/transfer-next-assignee`
+
+**Resposta de sucesso:**
+```json
+{
+  "ticketId": 1201,
+  "queueId": 3,
+  "method": "S",
+  "transferredTo": {
+    "id": 17,
+    "name": "Maria"
+  }
+}
+```
+
+**Resposta sem usuário elegível:**
+```json
+{
+  "ticketId": 1201,
+  "queueId": 3,
+  "method": "S",
+  "transferredTo": null
+}
+```
 
 ### Enviar Mensagem de Texto
 1. Selecione a operação **Enviar Mensagem**
@@ -366,7 +472,8 @@ Onde:
 
 ### Vincular Kanban
 1. Selecione a operação **Vincular Kanban**
-2. No campo **Dados (JSON)**, insira os dados no formato:
+2. Esta operação usa o endpoint **`POST /typebot/vincular_kanban_v2`**
+3. No campo **Dados (JSON)**, você pode usar o payload mínimo:
 ```json
 {
   "ticketId": 123,
@@ -374,10 +481,28 @@ Onde:
   "userId": 789
 }
 ```
-Onde:
+4. Exemplo completo com campos opcionais:
+```json
+{
+  "ticketId": 123,
+  "kanbanId": 456,
+  "userId": 789,
+  "value": 500.5,
+  "status": "novo",
+  "kanbanCreatedAt": "2026-03-09T10:00:00Z",
+  "shortDesc": "Lead inbound",
+  "probability": 70,
+  "funnelStatus": "open",
+  "expectedCloseAt": "2026-04-01T12:00:00Z",
+  "assignedUserId": 12
+}
+```
+Onde os obrigatórios são:
 - `ticketId`: ID do ticket
 - `kanbanId`: ID do kanban a ser vinculado
 - `userId`: ID do usuário
+5. Campos opcionais:
+- `value`, `status`, `kanbanCreatedAt`, `shortDesc`, `probability`, `funnelStatus`, `expectedCloseAt`, `assignedUserId`
 
 ### Listar Carteiras
 1. Selecione a operação **Listar Carteiras**
@@ -733,6 +858,26 @@ Envia um template WABA pré-aprovado para um número de WhatsApp.
 - Use `listWabaTemplates` para ver quais templates estão disponíveis
 - Os parâmetros devem corresponder às variáveis definidas no template
 - Templates WABA são ideais para notificações, confirmações e mensagens de marketing
+
+### 📩 Enviar SMS Short
+Envia SMS usando o endpoint Typebot autenticado.
+1. Selecione a operação **Enviar SMS Short**
+2. Preencha:
+   - **Número de Telefone**: destinatário no formato DDI+DDD+Número (ex: 5511999999999)
+   - **Mensagem SMS**: conteúdo do SMS
+
+**Endpoint chamado pelo node:** `POST /typebot/enviar_sms`
+
+**Retorno exemplo:**
+```json
+{
+  "status": 1,
+  "provider": "SMS Short",
+  "response": {
+    "success": true
+  }
+}
+```
 
 ## 💡 Casos de Uso Práticos
 

@@ -2,27 +2,33 @@ import {
 	IAuthenticateGeneric,
 	ICredentialTestRequest,
 	ICredentialType,
-	NodePropertyTypes,
+	INodeProperties,
 } from 'n8n-workflow';
 
 export class DigitalsacApi implements ICredentialType {
 	name = 'digitalsacApi';
-	displayName = 'Izing Pro Digitalsac API';
-	documentationUrl = '';
-	properties = [
+	displayName = 'Digitalsac Izing Pro API';
+	documentationUrl = 'https://github.com/digitalsac-io/n8n-nodes-digitalsac#readme';
+	icon = 'file:digitalsac.svg' as const;
+
+	properties: INodeProperties[] = [
 		{
 			displayName: 'API Base URL',
 			name: 'baseUrl',
-			type: 'string' as NodePropertyTypes,
+			type: 'string',
 			default: 'https://example.digitalsac.io',
-			description: 'Ex: https://seudominio.digitalsac.com.br',
+			placeholder: 'https://yourdomain.digitalsac.com.br',
+			description: 'Base URL of your Digitalsac instance',
+			required: true,
 		},
 		{
 			displayName: 'Bearer Token',
 			name: 'token',
-			type: 'string' as NodePropertyTypes,
+			type: 'string',
 			default: '',
 			typeOptions: { password: true },
+			description: 'API Bearer token issued by Digitalsac',
+			required: true,
 		},
 	];
 
@@ -39,7 +45,7 @@ export class DigitalsacApi implements ICredentialType {
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: '={{$credentials.baseUrl}}',
-			url: '/version',
+			url: '/typebot/listar_filas',
 			method: 'GET',
 		},
 	};

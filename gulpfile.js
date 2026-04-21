@@ -1,15 +1,13 @@
 const { src, dest } = require('gulp');
 
 /**
- * Copia os arquivos de ícones para todos os diretórios possíveis
+ * Copies SVG icons and node codex JSON files to the dist folder.
  */
 function buildIcons() {
-  return src('*.svg')
-    .pipe(dest('dist/'))
-    .pipe(dest('dist/icons/'))
-    .pipe(dest('dist/nodes/'))
-    .pipe(dest('dist/nodes/Digitalsac/'))
-    .pipe(dest('dist/icons/n8n-nodes-digitalsac/dist/nodes/digitalsac/'));
+  return src(
+    ['nodes/**/*.svg', 'nodes/**/*.node.json', 'credentials/**/*.svg'],
+    { base: '.' },
+  ).pipe(dest('dist/'));
 }
 
-exports['build:icons'] = buildIcons; 
+exports['build:icons'] = buildIcons;

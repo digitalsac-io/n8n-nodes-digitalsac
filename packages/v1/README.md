@@ -4,12 +4,18 @@ Este pacote adiciona um nó personalizado ao n8n para interagir com a API do Dig
 
 ## ✅ Versão para n8n v1.x
 
-**Esta é a versão 0.6.2, compatível com n8n v1.x**
+**Esta é a versão 0.6.9, compatível com n8n v1.x**
 
 Se você usa **n8n v2.x**, instale a versão correta:
 ```bash
-npm install n8n-nodes-digitalsac@next
+npm install n8n-nodes-digitalsac
 ```
+
+## 🆕 O que tem de novo nesta versão (0.6.9)
+
+- ✅ Nova operação **Enviar Carousel** no node Digitalsac
+- ✅ Endpoint suportado: `POST /v1/api/external/{uuid}/send-carousel`
+- ✅ Documentação de uso atualizada com exemplo de cards (JSON)
 
 ---
 
@@ -26,6 +32,7 @@ npm install n8n-nodes-digitalsac@next
 - Enviar Mensagem (texto e arquivos)
 - **Enviar Botões Interativos**
 - **Enviar Listas**
+- **Enviar Carousel**
 - **Enviar Mídia com Caption**
 - **Enviar Arquivo Base64**
 - Listar Tags

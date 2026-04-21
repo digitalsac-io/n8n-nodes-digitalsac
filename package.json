@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-digitalsac",
-  "version": "1.0.4",
+  "version": "1.2.0",
   "description": "Izing Pro Digitalsac",
   "keywords": [
     "n8n",
@@ -18,7 +18,7 @@
   },
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && gulp build:icons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials package.json --write",
     "lint": "eslint nodes credentials package.json",
@@ -26,9 +26,7 @@
     "prepublishOnly": "npm run build"
   },
   "files": [
-    "dist",
-    "index.ts",
-    "nodes"
+    "dist"
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,

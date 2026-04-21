@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-digitalsac",
-  "version": "1.0.4",
+  "version": "1.1.4",
   "description": "Izing Pro Digitalsac - Compatible with n8n v2.x",
   "keywords": [
     "n8n",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/digitalsac-io/n8n-nodes-digitalsac.git"
+    "url": "git+https://github.com/digitalsac-io/n8n-nodes-digitalsac.git"
   },
   "main": "dist/index.js",
   "scripts": {
