@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-digitalsac",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Izing Pro Digitalsac",
   "keywords": [
     "n8n",
@@ -51,7 +51,7 @@
     "prettier": "^2.8.8",
     "typescript": "^5.9.2"
   },
-  "overrides": {
-    "picomatch": "^4.0.0"
+  "peerDependencies": {
+    "n8n-workflow": "*"
   }
 }
