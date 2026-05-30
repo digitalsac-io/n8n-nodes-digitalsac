@@ -43,6 +43,11 @@ export class Digitalsac implements INodeType {
 				noDataExpression: true,
 				options: [
 					{ name: 'Cancel Schedule', value: 'cancelSchedule', action: 'Cancel a schedule' },
+					{
+						name: 'Cancel Scheduled Message',
+						value: 'cancelScheduledMessage',
+						action: 'Cancel a scheduled message',
+					},
 					{ name: 'Close Ticket', value: 'closeTicket', action: 'Close a ticket' },
 					{ name: 'Create Schedule', value: 'createSchedule', action: 'Create a schedule' },
 					{ name: 'Create Tag', value: 'createTag', action: 'Create a tag' },
@@ -55,12 +60,22 @@ export class Digitalsac implements INodeType {
 					{ name: 'List Available Users', value: 'listAvailableUsers', action: 'List available users for a service' },
 					{ name: 'List Kanbans', value: 'listKanbans', action: 'List kanbans' },
 					{ name: 'List Queues', value: 'listQueues', action: 'List queues' },
+					{
+						name: 'List Scheduled Messages (Typebot)',
+						value: 'listScheduledMessagesTypebot',
+						action: 'List scheduled messages',
+					},
 					{ name: 'List Schedules', value: 'listSchedules', action: 'List existing schedules' },
 					{ name: 'List Services', value: 'listServices', action: 'List scheduling services' },
 					{ name: 'List Tags', value: 'listTags', action: 'List tags' },
 					{ name: 'List WABA Templates', value: 'listWabaTemplates', action: 'List whats app business templates' },
 					{ name: 'List Wallets', value: 'listCarteiras', action: 'List wallets' },
 					{ name: 'Next Assignee in Queue', value: 'nextAssignee', action: 'Get next assignee in queue' },
+					{
+						name: 'Schedule Message (Typebot)',
+						value: 'scheduleMessageTypebot',
+						action: 'Create a scheduled message',
+					},
 					{ name: 'Send Base64 File', value: 'sendBase64', action: 'Send a base64 encoded file' },
 					{ name: 'Send Buttons', value: 'sendButtons', action: 'Send interactive buttons' },
 					{ name: 'Send Carousel', value: 'sendCarousel', action: 'Send a carousel' },
@@ -750,6 +765,75 @@ export class Digitalsac implements INodeType {
 				description: 'User ID used to filter schedules (optional)',
 			},
 			{
+				displayName: 'Status',
+				name: 'scheduledMessagesStatus',
+				type: 'options',
+				options: [
+					{ name: 'All', value: 'all' },
+					{ name: 'Cancelled', value: 'cancelled' },
+					{ name: 'Failed', value: 'failed' },
+					{ name: 'Pending (Default)', value: 'pending' },
+					{ name: 'Processing', value: 'processing' },
+					{ name: 'Received', value: 'received' },
+					{ name: 'Sent', value: 'sended' },
+				],
+				default: 'pending',
+				displayOptions: {
+					show: {
+						operation: ['listScheduledMessagesTypebot'],
+					},
+				},
+				description: 'Status filter for scheduled messages',
+			},
+			{
+				displayName: 'Ticket ID (Optional)',
+				name: 'scheduledMessagesTicketId',
+				type: 'number',
+				default: 0,
+				displayOptions: {
+					show: {
+						operation: ['listScheduledMessagesTypebot'],
+					},
+				},
+				description: 'Filter by ticket ID',
+			},
+			{
+				displayName: 'Phone Number (Optional)',
+				name: 'scheduledMessagesNumber',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						operation: ['listScheduledMessagesTypebot'],
+					},
+				},
+				description: 'Filter by contact number (digits only or formatted)',
+			},
+			{
+				displayName: 'Limit',
+				name: 'scheduledMessagesLimit',
+				type: 'number',
+				default: 50,
+				displayOptions: {
+					show: {
+						operation: ['listScheduledMessagesTypebot'],
+					},
+				},
+				description: 'Maximum number of items per request (1-200)',
+			},
+			{
+				displayName: 'Offset',
+				name: 'scheduledMessagesOffset',
+				type: 'number',
+				default: 0,
+				displayOptions: {
+					show: {
+						operation: ['listScheduledMessagesTypebot'],
+					},
+				},
+				description: 'Pagination offset',
+			},
+			{
 				displayName: 'Schedule ID',
 				name: 'scheduleId',
 				type: 'number',
@@ -760,6 +844,32 @@ export class Digitalsac implements INodeType {
 					},
 				},
 				description: 'Schedule ID to cancel',
+			},
+			{
+				displayName: 'Scheduled Message Data (JSON)',
+				name: 'scheduledMessageData',
+				type: 'json',
+				default:
+					'{\n  "number": "5511999999999",\n  "name": "João",\n  "body": "Olá João, passando para lembrar do seu atendimento.",\n  "date": "29/05/2026",\n  "time": "10:00"\n}',
+				displayOptions: {
+					show: {
+						operation: ['scheduleMessageTypebot'],
+					},
+				},
+				description:
+					'Payload for /typebot/agendar_mensagem. Supports number or ticketId, body, date/time or scheduleDate. Timezone is optional and defaults to tenant timezone.',
+			},
+			{
+				displayName: 'Scheduled Message ID',
+				name: 'scheduledMessageId',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						operation: ['cancelScheduledMessage'],
+					},
+				},
+				description: 'Message ID returned by the schedule message endpoint',
 			},
 			{
 				displayName: 'Schedule ID',
@@ -1138,6 +1248,36 @@ export class Digitalsac implements INodeType {
 						break;
 					}
 
+					case 'listScheduledMessagesTypebot': {
+						const scheduledMessagesStatus = this.getNodeParameter('scheduledMessagesStatus', i) as string;
+						const scheduledMessagesTicketId = this.getNodeParameter('scheduledMessagesTicketId', i) as number;
+						const scheduledMessagesNumber = this.getNodeParameter('scheduledMessagesNumber', i, '') as string;
+						const scheduledMessagesLimit = this.getNodeParameter('scheduledMessagesLimit', i) as number;
+						const scheduledMessagesOffset = this.getNodeParameter('scheduledMessagesOffset', i) as number;
+
+						const query: string[] = [];
+						if (scheduledMessagesStatus) query.push(`status=${encodeURIComponent(scheduledMessagesStatus)}`);
+						if (scheduledMessagesTicketId && scheduledMessagesTicketId > 0) {
+							query.push(`ticketId=${encodeURIComponent(String(scheduledMessagesTicketId))}`);
+						}
+						if (scheduledMessagesNumber && scheduledMessagesNumber.trim() !== '') {
+							query.push(`number=${encodeURIComponent(scheduledMessagesNumber.trim())}`);
+						}
+						if (scheduledMessagesLimit) {
+							query.push(`limit=${encodeURIComponent(String(scheduledMessagesLimit))}`);
+						}
+						if (scheduledMessagesOffset && scheduledMessagesOffset > 0) {
+							query.push(`offset=${encodeURIComponent(String(scheduledMessagesOffset))}`);
+						}
+
+						url =
+							query.length > 0
+								? `/typebot/listar_mensagens_agendadas?${query.join('&')}`
+								: '/typebot/listar_mensagens_agendadas';
+						method = 'GET';
+						break;
+					}
+
 					case 'createSchedule': {
 						url = '/typebot/criar_agendamento';
 						method = 'POST';
@@ -1183,6 +1323,31 @@ export class Digitalsac implements INodeType {
 						method = 'POST';
 						const scheduleIdForCancel = this.getNodeParameter('scheduleId', i) as number;
 						body = { scheduleId: scheduleIdForCancel };
+						break;
+					}
+
+					case 'scheduleMessageTypebot': {
+						url = '/typebot/agendar_mensagem';
+						method = 'POST';
+						body = parseJsonParam(
+							this.getNodeParameter('scheduledMessageData', i),
+							'Scheduled Message Data (JSON)',
+							i,
+							{},
+						) as IDataObject;
+						break;
+					}
+
+					case 'cancelScheduledMessage': {
+						url = '/typebot/cancelar_mensagem_agendada';
+						method = 'POST';
+						const scheduledMessageId = this.getNodeParameter('scheduledMessageId', i) as string;
+						if (!scheduledMessageId || scheduledMessageId.trim() === '') {
+							throw new NodeOperationError(this.getNode(), 'Scheduled Message ID is required.', {
+								itemIndex: i,
+							});
+						}
+						body = { messageId: scheduledMessageId };
 						break;
 					}
 

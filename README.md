@@ -76,6 +76,7 @@ The node automatically attaches the `Authorization: Bearer <token>` header on ev
 | Kanbans            | List Kanbans · Link Kanban                                                               |
 | Wallets            | List Wallets · Link Wallet                                                               |
 | Scheduling         | List Services · List Available Users · List Available Slots · List Schedules · Create Schedule · Cancel Schedule · Calendar Link |
+| Scheduled Messaging | List Scheduled Messages (Typebot) · Schedule Message (Typebot) · Cancel Scheduled Message |
 | WABA Templates     | List WABA Templates · **Send WABA Template** (dynamic)                                   |
 | SMS                | Send Short SMS                                                                           |
 
@@ -294,7 +295,27 @@ Sample response:
 - trigger an automated `.ics` download,
 - import into Google Calendar / Outlook / Apple Calendar.
 
-### List WABA Templates
+### Scheduled Messaging (Typebot)
+
+**List Scheduled Messages (Typebot)**
+- Optional filters: **Status**, **Ticket ID**, **Phone Number**, **Limit**, **Offset**.
+- Returns each scheduled item with `messageId` (used by **Cancel Scheduled Message**).
+
+**Schedule Message (Typebot)** — fill **Scheduled Message Data (JSON)** with payload accepted by `/typebot/agendar_mensagem`, for example:
+```json
+{
+  "number": "5511999999999",
+  "name": "João",
+  "body": "Olá João, passando para lembrar do seu atendimento.",
+  "date": "29/05/2026",
+  "time": "10:00"
+}
+```
+`timezone` is optional. If omitted, Digitalsac uses the tenant timezone.
+
+**Cancel Scheduled Message** — fill **Scheduled Message ID** (`messageId` returned by the scheduling endpoint).
+
+#### List WABA Templates
 Lists all WhatsApp Business templates available for a connection. Fill **WhatsApp ID**.
 
 Sample response:
